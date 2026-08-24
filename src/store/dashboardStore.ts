@@ -38,7 +38,7 @@ const emptyExampleDraft: ExampleDraft = {
   videoPremium: true,
   planType: 'firstbook_advance',
   exampleName: '',
-  dynamicOptions: [{ id:Math.random().toString(), text: 'أ', isCorrect: false },{ id:Math.random().toString(), text: 'ب', isCorrect: false }],
+  dynamicOptions: [{ id:Math.random().toString(), text: '/أ', isCorrect: false },{ id:Math.random().toString(), text: '/ب', isCorrect: false }],
 };
 
 export const useDashboardStore = create<DashboardState>()(
