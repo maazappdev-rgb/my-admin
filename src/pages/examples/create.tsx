@@ -152,8 +152,8 @@ export const CreateExamplePage = () => {
     return exampleDraft.dynamicOptions;
    }
   return [
-    { id: Math.random().toString(), text: 'أ', isCorrect: false },
-    { id: Math.random().toString(), text: 'ب', isCorrect: false }, ]; });
+    { id: Math.random().toString(), text: '/أ', isCorrect: false },
+    { id: Math.random().toString(), text: '/ب', isCorrect: false }, ]; });
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
