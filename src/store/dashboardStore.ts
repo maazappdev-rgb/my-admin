@@ -36,7 +36,7 @@ interface DashboardState {
 const emptyExampleDraft: ExampleDraft = {
   selectedCategoryId: '',
   videoPremium: true,
-  planType: 'basicbook',
+  planType: 'firstbook_advance',
   exampleName: '',
   dynamicOptions: [{ id: 'initial-option', text: '', isCorrect: false }],
 };

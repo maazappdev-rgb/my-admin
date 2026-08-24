@@ -399,7 +399,7 @@ export const CreateExamplePage = () => {
       setSelectedCategoryId('');
       setExampleName('');
       setVideoPremium(true);
-      setPlanType('basicbook');
+      setPlanType('firstbook_advance');
       setVideoFile(null);
       setQuestionImageFile(null);
       setThumbnailFile(null);

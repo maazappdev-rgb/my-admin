@@ -24,6 +24,17 @@ type PaymentRow = TableRow & {
   status?: string | null
 }
 
+type ProfileRow = TableRow & {
+  id?: string
+  user_id?: string
+  name?: string | null
+  full_name?: string | null
+  first_name?: string | null
+  last_name?: string | null
+  username?: string | null
+  email?: string | null
+}
+
 const verificationUrl = '/verify/storage'
 
 const dashboardStats = [
@@ -69,6 +80,14 @@ function formatValue(value: unknown): string {
     }
   }
   return String(value)
+}
+
+function getProfileName(profile: ProfileRow): string | null {
+  const fullName = profile.name ?? profile.full_name
+  if (fullName) return fullName
+
+  const firstAndLastName = [profile.first_name, profile.last_name].filter(Boolean).join(' ')
+  return firstAndLastName || profile.username || profile.email || null
 }
 
 function useResourceRows(resource: string) {
@@ -261,11 +280,26 @@ function VideosPage() {
 
 function PaymentsPage() {
   const { rows, loading, error } = useResourceRows('payments')
+  const { rows: profileRows } = useResourceRows('profiles')
   const [actionState, setActionState] = useState<Record<string, 'verifying' | 'retrying'>>({})
   const [actionError, setActionError] = useState<Record<string, string>>({})
   const [reasonValues, setReasonValues] = useState<Record<string, string>>({})
 
   const payments = rows as PaymentRow[]
+  const profileNames = useMemo(() => {
+    const names = new Map<string, string>()
+
+    ;(profileRows as ProfileRow[]).forEach((profile) => {
+      const name = getProfileName(profile)
+      if (!name) return
+
+      if (profile.id) names.set(profile.id, name)
+      if (profile.user_id) names.set(profile.user_id, name)
+    })
+
+    return names
+  }, [profileRows])
+
   useEffect(() => {
     setReasonValues(Object.fromEntries(payments.map((payment) => [payment.id, payment.reason ?? ''])))
   }, [payments])
@@ -278,6 +312,14 @@ function PaymentsPage() {
 
     return preferredColumns.filter((column) => availableColumns.has(column)).slice(0, 6)
   }, [payments])
+
+  const getPaymentValue = (payment: PaymentRow, column: string) => {
+    if (column === 'user_id') {
+      return profileNames.get(payment.user_id) ?? payment.user_id
+    }
+
+    return payment[column]
+  }
 
   const setPaymentAction = async (payment: PaymentRow, action: 'verifying' | 'retrying') => {
     setActionError((current) => ({ ...current, [payment.id]: '' }))
@@ -353,7 +395,7 @@ function PaymentsPage() {
           <table>
             <thead>
               <tr>
-                {columns.map((column) => <th key={column}>{column}</th>)}
+                {columns.map((column) => <th key={column}>{column === 'user_id' ? 'name' : column}</th>)}
                 <th>actions</th>
               </tr>
             </thead>
@@ -371,7 +413,7 @@ function PaymentsPage() {
                             View receipt
                           </a>
                         ) : (
-                          formatValue(payment[column])
+                          formatValue(getPaymentValue(payment, column))
                         )}
                       </td>
                     ))}
