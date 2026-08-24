@@ -147,7 +147,13 @@ export const CreateExamplePage = () => {
   const [questionImageFile, setQuestionImageFile] = useState<File | null>(null);
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
 
-  const [dynamicOptions, setDynamicOptions] = useState<OptionItem[]>(exampleDraft.dynamicOptions);
+  const [dynamicOptions, setDynamicOptions] = useState<OptionItem[]>(()=> { 
+    if (exampleDraft.dynamicOptions?.length >= 2) {
+    return exampleDraft.dynamicOptions;
+   }
+  return [
+    { id: Math.random().toString(), text: 'أ', isCorrect: false },
+    { id: Math.random().toString(), text: 'ب', isCorrect: false }, ]; });
 
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
