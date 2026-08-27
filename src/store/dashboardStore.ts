@@ -36,7 +36,7 @@ interface DashboardState {
 const emptyExampleDraft: ExampleDraft = {
   selectedCategoryId: '',
   videoPremium: true,
-  planType: 'secondbook_advance',
+  planType: 'bascicbook',
   exampleName: '',
   dynamicOptions: [{ id:Math.random().toString(), text: 'أ/', isCorrect: false },{ id:Math.random().toString(), text: 'ب/', isCorrect: false }],
 };
