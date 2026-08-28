@@ -42,7 +42,7 @@ const emptyExampleDraft: ExampleDraft = {
   selectedLevel2Id: '',
   selectedCategoryId: '',
   videoPremium: true,
-  planType: 'bascicbook',
+  planType: 'basicbook',
   exampleName: '',
   dynamicOptions: [{ id:Math.random().toString(), text: 'أ/', isCorrect: false },{ id:Math.random().toString(), text: 'ب/', isCorrect: false }],
 };
