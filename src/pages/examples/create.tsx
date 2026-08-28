@@ -74,25 +74,6 @@ const loadDraftFile = async (key: string) => {
   });
 };
 
-const saveDirectory = async (id: string, directory: FileSystemDirectoryHandle) => {
-  const database = await openPickerDatabase();
-  return new Promise<void>((resolve, reject) => {
-    const request = database.transaction(pickerStoreName, 'readwrite').objectStore(pickerStoreName).put(directory, id);
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-};
-
-const hasDirectoryPermission = async (directory: FileSystemDirectoryHandle) => {
-  const permissionDirectory = directory as PermissionDirectoryHandle;
-  const permission = await permissionDirectory.queryPermission({ mode: 'read' });
-  if (permission === 'granted') return true;
-  if (permission === 'prompt') {
-    return (await permissionDirectory.requestPermission({ mode: 'read' })) === 'granted';
-  }
-  return false;
-};
-
 const getFilePickerAcceptTypes = (accept: string): Record<string, string[]> => {
   if (accept === 'image/*') {
     return {
@@ -132,8 +113,11 @@ const openRememberedFilePicker = async ({ id, accept }: FilePickerOptions) => {
 };
 
 export const CreateExamplePage = () => {
+
   const { exampleDraft, setExampleDraft, clearExampleDraft } = useDashboardStore();
   const [categories, setCategories] = useState<any[]>([]);
+  const [selectedLevel1Id, setSelectedLevel1Id] = useState(exampleDraft.selectedLevel1Id);
+  const [selectedLevel2Id, setSelectedLevel2Id] = useState(exampleDraft.selectedLevel2Id);
   const [selectedCategoryId, setSelectedCategoryId] = useState(exampleDraft.selectedCategoryId);
 
   const [videoPremium, setVideoPremium] = useState(exampleDraft.videoPremium);
@@ -158,13 +142,22 @@ export const CreateExamplePage = () => {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState('');
 
+  const handleLevel1Change = (id: string) => {
+    setSelectedLevel1Id(id);
+    setSelectedLevel2Id('');
+    setSelectedCategoryId('');
+  };
+
+  const handleLevel2Change = (id: string) => {
+    setSelectedLevel2Id(id);
+    setSelectedCategoryId('');
+  };
   // Fetch Resources (Direct)
   useEffect(() => {
     async function load() {
         const { data: cats } = await supabaseClient
           .from('categories')
-          .select('*')
-          .eq('level', 3);
+          .select('*');
         if (cats) setCategories(cats);
     }
     load();
@@ -180,11 +173,14 @@ export const CreateExamplePage = () => {
   }, []);
 
   useEffect(() => {
-    setExampleDraft({ selectedCategoryId, videoPremium, planType, exampleName, dynamicOptions });
-  }, [selectedCategoryId, videoPremium, planType, exampleName, dynamicOptions, setExampleDraft]);
+    setExampleDraft({ selectedLevel1Id,selectedLevel2Id,selectedCategoryId, videoPremium, planType, exampleName, dynamicOptions });
+  }, [selectedLevel1Id, selectedLevel2Id, selectedCategoryId, videoPremium, planType, exampleName, dynamicOptions, setExampleDraft]);
+
 
   useEffect(() => {
     const restoreDraft = (draft: typeof exampleDraft) => {
+      setSelectedLevel1Id(draft.selectedLevel1Id);
+      setSelectedLevel2Id(draft.selectedLevel2Id);
       setSelectedCategoryId(draft.selectedCategoryId);
       setVideoPremium(draft.videoPremium);
       setPlanType(draft.planType);
@@ -200,6 +196,16 @@ export const CreateExamplePage = () => {
       restoreDraft(state.exampleDraft);
     });
   }, []);
+
+  const level1Options = categories.filter((c) => Number(c.level) === 1);
+
+  const level2Options = categories.filter(
+    (c) => Number(c.level) === 2 && c.parent_id === selectedLevel1Id
+  );
+
+  const level3Options = categories.filter(
+    (c) => Number(c.level) === 3 && c.parent_id === selectedLevel2Id
+  );
 
   const addOption = () => {
     setDynamicOptions([...dynamicOptions, { id: Math.random().toString(), text: '', isCorrect: false }]);
@@ -453,10 +459,54 @@ export const CreateExamplePage = () => {
           <h2>بيانات المثال</h2>
 
           <label>
-            القسم
-            <select value={selectedCategoryId} onChange={(event) => setSelectedCategoryId(event.target.value)} required>
-              <option value="">اختر القسم</option>
-              {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+            القسم الرئيسي (مستوى 1)
+            <select
+              value={selectedLevel1Id}
+              onChange={(e) => handleLevel1Change(e.target.value)}
+              required
+            >
+              <option value="">اختر القسم الرئيسي</option>
+              {level1Options.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* ===== Level 2 ===== */}
+          <label>
+            القسم الفرعي (مستوى 2)
+            <select
+              value={selectedLevel2Id}
+              onChange={(e) => handleLevel2Change(e.target.value)}
+              required
+              disabled={!selectedLevel1Id}
+            >
+              <option value="">اختر القسم الفرعي</option>
+              {level2Options.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          {/* ===== Level 3 (this is the one saved) ===== */}
+          <label>
+            القسم النهائي (مستوى 3)
+            <select
+              value={selectedCategoryId}
+              onChange={(e) => setSelectedCategoryId(e.target.value)}
+              required
+              disabled={!selectedLevel2Id}
+            >
+              <option value="">اختر القسم النهائي</option>
+              {level3Options.map((cat) => (
+                <option key={cat.id} value={cat.id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </label>
 

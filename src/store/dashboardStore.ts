@@ -8,6 +8,9 @@ interface Viewport {
 }
 
 export interface ExampleDraft {
+
+  selectedLevel1Id: string;
+  selectedLevel2Id: string;
   selectedCategoryId: string;
   videoPremium: boolean;
   planType: string;
@@ -34,6 +37,9 @@ interface DashboardState {
 }
 
 const emptyExampleDraft: ExampleDraft = {
+
+  selectedLevel1Id: '',
+  selectedLevel2Id: '',
   selectedCategoryId: '',
   videoPremium: true,
   planType: 'bascicbook',
@@ -44,6 +50,7 @@ const emptyExampleDraft: ExampleDraft = {
 export const useDashboardStore = create<DashboardState>()(
   persist(
     (set) => ({
+
       exampleCategoryId: "",
       setExampleCategoryId: (id: string) => set({ exampleCategoryId: id }),
 
@@ -57,7 +64,7 @@ export const useDashboardStore = create<DashboardState>()(
       setExampleDraft: (draft) => set((state) => ({
         exampleDraft: { ...state.exampleDraft, ...draft },
       })),
-      clearExampleDraft: () => set({ exampleDraft: emptyExampleDraft }),
+      clearExampleDraft: () => set({ exampleDraft: emptyExampleDraft}),
     }),
     {
       name: 'dashboard-storage',
